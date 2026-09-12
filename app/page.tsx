@@ -152,6 +152,7 @@ export default function Home() {
   const [phase, setPhase] = useState<Phase>("intro");
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
+  const [hoverEnabled, setHoverEnabled] = useState(true);
   const result = useMemo(() => getResult(answers), [answers]);
   const resultGroup = profiles.filter((profile) => profile.group === result.profile.group);
   const nearbyProfiles = resultGroup.filter((profile) => profile.key !== result.profile.key);
@@ -163,7 +164,9 @@ export default function Home() {
   }, [phase]);
 
   const begin = () => { setAnswers([]); setStep(0); setPhase("test"); };
-  const choose = (index: number) => {
+  const choose = (index: number, button: HTMLButtonElement) => {
+    button.blur();
+    setHoverEnabled(false);
     const next = answers.slice(0, step);
     next[step] = index;
     setAnswers(next);
@@ -217,9 +220,12 @@ export default function Home() {
           <div className="progress"><i style={{ width: `${((step + 1) / questions.length) * 100}%` }} /></div>
           <div className="question" key={step}>
             <p>{questions[step].label}</p><h2>{questions[step].title}</h2>
-            <div className="choices">
+            <div
+              className={`choices${hoverEnabled ? " is-hoverable" : ""}`}
+              onPointerMove={() => setHoverEnabled(true)}
+            >
               {questions[step].choices.map((choice, index) => (
-                <button key={choice.label} onClick={() => choose(index)}>
+                <button key={choice.label} onClick={(event) => choose(index, event.currentTarget)}>
                   <span>{String.fromCharCode(65 + index)}</span><div><b>{choice.label}</b><small>{choice.hint}</small></div><i>↗</i>
                 </button>
               ))}
